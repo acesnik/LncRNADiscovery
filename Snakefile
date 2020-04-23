@@ -32,7 +32,9 @@ def unique_tag():
     return str(len(str(expand("{fq}", fq=FQ_PREFIXES))))
 
 rule all:
-    input: "data/Tpms.csv", "data/Counts.csv", "data/IdsToNames.csv"
+    input:
+        "output/{fq}" + unique_tag() + STAR_OUT_BAM_SUFFIX_2ND + "slncky/annotated.lncs.info.txt", # lncRNA discovery
+        "data/Tpms.csv", "data/Counts.csv", "data/IdsToNames.csv" # quantification
 
 # rule clean:
 #     shell: "rm -rf ensembl output"
