@@ -3,7 +3,6 @@ RAM_B_REQ = RAM_MB_REQ * 1000 # BYTES
 
 rule star_genome_generate:
     input:
-        efa="data/ERCC.fa",
         gfa=FA,
         gff=GFF3 + ".fix.gff3"
     output: STAR_REF_FOLDER + "/SA"
@@ -11,7 +10,7 @@ rule star_genome_generate:
     threads: 99
     shell:
         "STAR --runMode genomeGenerate --runThreadN {threads} --genomeDir {params.genomedir} "
-        "--genomeFastaFiles {input.efa} {input.gfa} --sjdbGTFfile {input.gff} --sjdbGTFtagExonParentTranscript Parent --sjdbOverhang 100"
+        "--genomeFastaFiles {input.gfa} --sjdbGTFfile {input.gff} --sjdbGTFtagExonParentTranscript Parent --sjdbOverhang 100"
 
 rule load_star_genome_firstpass:
     input: STAR_REF_FOLDER + "/SA"
@@ -62,7 +61,6 @@ rule unload_firstpass_genome:
 
 rule star_genome_generate_secondpass:
     input:
-        efa="data/ERCC.fa",
         gfa=FA,
         gff=GFF3 + ".fix.gff3",
         jj=expand("output/SJ1st/{fq}SJ.out.tab", fq=FQ_PREFIXES)
@@ -72,7 +70,7 @@ rule star_genome_generate_secondpass:
     threads: 99
     shell:
         "STAR --runMode genomeGenerate --runThreadN {threads} --genomeDir {params.genomedir} "
-        "--genomeFastaFiles {input.efa} {input.gfa} --sjdbGTFfile {input.gff} --sjdbGTFtagExonParentTranscript Parent --sjdbOverhang 100"
+        "--genomeFastaFiles {input.gfa} --sjdbGTFfile {input.gff} --sjdbGTFtagExonParentTranscript Parent --sjdbOverhang 100"
         "--limitSjdbInsertNsj 1200000 --sjdbFileChrStartEnd {input.jj}"
 
 rule load_star_genome_2pass:
