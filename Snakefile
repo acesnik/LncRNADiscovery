@@ -33,8 +33,8 @@ def unique_tag():
 
 rule all:
     input:
-        "output/{fq}" + unique_tag() + STAR_OUT_BAM_SUFFIX_2ND + "slncky/annotated.lncs.info.txt", # lncRNA discovery
-        "data/Tpms.csv", "data/Counts.csv", "data/IdsToNames.csv" # quantification
+        "output/combined.slncky/annotated.lncs.info.txt", # lncRNA discovery
+        "output/Tpms.csv", "output/Counts.csv", "output/IdsToNames.csv" # quantification
 
 # rule clean:
 #     shell: "rm -rf ensembl output"
@@ -42,9 +42,8 @@ rule all:
 include: "rules/align.smk"
 include: "rules/isoforms.smk"
 include: "rules/lncRNAs.smk"
-include: "rules/qc.smk"
+# include: "rules/qc.smk"
 include: "rules/quant.smk"
-include: "rules/isoforms.smk"
 
 rule download_ensembl_genome:
     '''Download the genome with the version specified above'''

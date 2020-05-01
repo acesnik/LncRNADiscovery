@@ -10,7 +10,7 @@ dependencies:
   - fastqc
   - skewer
   - star =2.7.0f-0
-  - bedtools
+  - bedtools=2.24.0
   - lastz #slncky
   - ucsc-liftover #slncky
   - bedops # slncky
@@ -21,16 +21,19 @@ dependencies:
   - perl-statistics-descriptive
   - perl-array-utils
   - ucsc-gff3togenepred
+  - ucsc-gtftogenepred
+  - ucsc-genepredtobed
   - cufflinks
-  - numpy # velocyto
-  - scipy
-  - cython
-  - numba
-  - matplotlib
-  - scikit-learn
-  - h5py
-  - click
-  - R=3.5.1
-  - rpy2=2.9.4
-  - r-devtools=2.0.1
+  - stringtie
+  # - numpy # velocyto
+  # - scipy
+  # - cython
+  # - numba
+  # - matplotlib
+  # - scikit-learn
+  # - h5py
+  # - click
+  # - R=3.5.1
+  # - rpy2=2.9.4
+  # - r-devtools=2.0.1
   - pip

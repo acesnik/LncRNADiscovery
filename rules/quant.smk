@@ -4,46 +4,43 @@ REFSTAR_FOLDER = f"ensembl/Homo_sapiens.{GENEMODEL_VERSION}RsemStar/"
 rule rsem_star_genome:
     '''Create an RSEM reference with STAR indices'''
     input:
+        efa="data/ERCC.fa",
         gfa=FA,
-        customGtf = "data/combined.sorted.filtered.withcds.gtf"
+        customGtf="output/combined.sorted.filtered.withcds.gtf"
     output:
-        REFSTAR_PREFIX + ".gtf",
         suffix = REFSTAR_FOLDER + "SA"
     threads: 99
     resources: mem_mb=60000
-    log: "data/ensembl/prepare-reference.log"
+    log: "output/ensembl/prepare-reference.log"
     shell:
-        "(rsem-prepare-reference --num-threads {threads} --star --gtf {input.customGtf} \"{input.gfa}\" " + REFSTAR_PREFIX +
+        "(rsem-prepare-reference --num-threads {threads} --star --gtf {input.customGtf} \"{input.efa}\",\"{input.gfa}\" " + REFSTAR_PREFIX +
         ") 2> {log}"
 
 rule rsem_star_align:
     '''Align to transcripts with STAR and quantify with RSEM'''
     input:
         suffix=REFSTAR_FOLDER + "SA",
-        gtf=REFSTAR_PREFIX + ".gtf",
-        # fq=expand("output/{fq}" + unique_tag() + STAR_OUT_BAM_SUFFIX_2ND, fq=FQ_PREFIXES)
-        fq1="data/trimmed/{sra}.trim_1.fastq.gz" if check_sra() else "data/{fq}_1.fastq.gz",
-        fq2="D/trimmed/{sra}.trim_2.fastq.gz" if check_sra() else "data/{fq}_2.fastq.gz",
+        fastq=expand(FQ_FOLDER + "{fq}.fastq.gz", fq=FQ_PREFIXES) #single end only
     output:
-        "data/{sra}.isoforms.results",
-        "data/{sra}.genes.results",
-        "data/{sra}.time",
-        directory("data/{sra}.stat"),
+        "output/{fq}.isoforms.results",
+        "output/{fq}.genes.results",
+        "output/{fq}.time",
+        directory("output/{fq}.stat"),
     resources: mem_mb=50000
     threads: 12
-    log: "data/{sra}calculate-expression.log"
+    log: "output/{fq}calculate-expression.log"
     shell:
         "(rsem-calculate-expression --no-bam-output --time --star" # --calc-ci" not doing credibility intervals for now; they take a long time to calc.
-        " --num-threads {threads} --paired-end <(zcat {input.fq1}) <(zcat {input.fq2}) " + REFSTAR_PREFIX + " data/{wildcards.sra}) &> {log}"
+        " --num-threads {threads} <(zcat " + FQ_FOLDER + "{wildcards.fq}.fastq.gz) " + REFSTAR_PREFIX + " output/{wildcards.fq}) &> {log}"
 
 rule make_rsem_dataframe:
     '''Take the results from RSEM and put them in a usable dataframe'''
     input:
-        expand("data/{sra}.genes.results", sra=config["sra"], dir=config["analysisDirectory"]),
-        gff="data/ensembl/" + REF + "." + config["release"] + ".gff3" + ".fix.gff3"
+        expand("output/{fq}.genes.results", fq=FQ_PREFIXES),
+        gff=GFF3 + ".fix.gff3"
     output:
-        counts="data/Counts.csv",
-        names="data/IdsToNames.csv",
-        tpms="data/Tpms.csv"
+        counts="output/Counts.csv",
+        names="output/IdsToNames.csv",
+        tpms="output/Tpms.csv"
     shell:
         "python scripts/make_rsem_dataframe.py {input.gff} {output.counts} {output.tpms} {output.names}"

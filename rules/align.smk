@@ -3,6 +3,7 @@ RAM_B_REQ = RAM_MB_REQ * 1000 # BYTES
 
 rule star_genome_generate:
     input:
+        efa="data/ERCC.fa",
         gfa=FA,
         gff=GFF3 + ".fix.gff3"
     output: STAR_REF_FOLDER + "/SA"
@@ -10,7 +11,7 @@ rule star_genome_generate:
     threads: 99
     shell:
         "STAR --runMode genomeGenerate --runThreadN {threads} --genomeDir {params.genomedir} "
-        "--genomeFastaFiles {input.gfa} --sjdbGTFfile {input.gff} --sjdbGTFtagExonParentTranscript Parent --sjdbOverhang 100"
+        "--genomeFastaFiles {input.gfa} {input.efa} --sjdbGTFfile {input.gff} --sjdbGTFtagExonParentTranscript Parent --sjdbOverhang 100"
 
 rule load_star_genome_firstpass:
     input: STAR_REF_FOLDER + "/SA"
@@ -18,6 +19,13 @@ rule load_star_genome_firstpass:
     params: genomedir=STAR_REF_FOLDER
     resources: mem_mb = RAM_MB_REQ
     shell: "STAR --genomeLoad LoadAndExit --genomeDir {params} && touch {output}"
+
+rule fastqc_analysis:
+    input: FQ_FOLDER + "{fq}.fastq.gz", #single end only
+    output: FQ_FOLDER + "{fq}_fastqc.html"
+    log: "output/{fq}.fastqc.log"
+    threads: 6
+    shell: "fastqc -t {threads} {input} 2> {log}"
 
 rule star_firstpass:
     input:
@@ -48,19 +56,9 @@ rule unload_firstpass_genome:
         "STAR --genomeLoad Remove --genomeDir {params.genomedir} && "
         "touch {output}"
 
-# rule process_first_pass:
-#     '''Use only non-mitochondrial canonical splice sites (not used by JUM)'''
-#     input:
-#         "temp/unloaded_firstpass",
-#         jj=expand("output/{fq}SJ.out.tab", fq=FQ_PREFIXES)
-#     output: "output/combinedSJ.out.tab"
-#     shell:
-#         "awk 'BEGIN {{OFS=\"\t\"; strChar[0]=\".\"; strChar[1]=\"+\"; strChar[2]=\"-\";}} "
-#         "{{if($5>0){{print $1,$2,$3,strChar[$4]}}}}' {input.jj} | "
-#         "grep -v 'MT' >> {output}"
-
 rule star_genome_generate_secondpass:
     input:
+        efa="data/ERCC.fa",
         gfa=FA,
         gff=GFF3 + ".fix.gff3",
         jj=expand("output/SJ1st/{fq}SJ.out.tab", fq=FQ_PREFIXES)
@@ -70,7 +68,7 @@ rule star_genome_generate_secondpass:
     threads: 99
     shell:
         "STAR --runMode genomeGenerate --runThreadN {threads} --genomeDir {params.genomedir} "
-        "--genomeFastaFiles {input.gfa} --sjdbGTFfile {input.gff} --sjdbGTFtagExonParentTranscript Parent --sjdbOverhang 100"
+        "--genomeFastaFiles {input.gfa} {input.efa} --sjdbGTFfile {input.gff} --sjdbGTFtagExonParentTranscript Parent --sjdbOverhang 100"
         "--limitSjdbInsertNsj 1200000 --sjdbFileChrStartEnd {input.jj}"
 
 rule load_star_genome_2pass:
@@ -118,12 +116,12 @@ rule merge_bams:
     input:
         bams=expand("output/{fq}" + unique_tag() + STAR_OUT_BAM_SUFFIX_2ND, fq=FQ_PREFIXES)
     output:
-        sorted="data/combined.sorted.bam",
-        stats="data/combined.sorted.stats"
+        sorted="output/combined.sorted.bam",
+        stats="output/combined.sorted.stats"
     params:
         compression="9",
-        tempprefix="data/combined.sorted"
-    log: "data/combined.sorted.log"
+        tempprefix="output/combined.sorted"
+    log: "output/combined.sorted.log"
     threads: 12
     resources: mem_mb=16000
     shell:
