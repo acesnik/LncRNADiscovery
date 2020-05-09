@@ -29,7 +29,6 @@ with open(gff) as gffhandle:
             gene_id_to_biotype[attributes["ID"][len("gene:"):]] = attributes["biotype"] if "ID" in attributes and "biotype" in attributes else ""
             gene_id_to_description[attributes["ID"][len("gene:"):]] = attributes["description"] if "ID" in attributes and "description" in attributes else ""
 
-
 print("globbing output/*.genes.results")
 files = glob.glob("output/*.genes.results")
 line_ct = sum(1 for line in open(files[0]))

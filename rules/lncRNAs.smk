@@ -19,13 +19,13 @@ rule index_fa:
 rule convert_predicted_gtf_to_bed12:
     '''Use tools from BEDOPS to convert custom GTF to sorted BED12 file'''
     input:
-        gtf="output/combined.sorted.filtered.withcds.gtf",
+        gtf="output/combined.filtered.withcds.gtf",
         fai=GENOME_FA + ".fai"
     output:
-        temp("output/combined.sorted.filtered.withcds.gtf.genePred"),
-        bed12=temp("output/combined.sorted.filtered.withcds.filtered.bed12"),
-        bed12sorted="output/combined.sorted.filtered.withcds.filtered.sorted.bed12"
-    log: "output/combined.sorted.filtered.withcds.filtered.bed12.log"
+        temp("output/combined.filtered.withcds.gtf.genePred"),
+        bed12=temp("output/combined.filtered.withcds.filtered.bed12"),
+        bed12sorted="output/combined.filtered.withcds.filtered.sorted.bed12"
+    log: "output/combined.filtered.withcds.filtered.bed12.log"
     shell:
         "(gtfToGenePred {input.gtf} {input.gtf}.genePred && "
         "genePredToBed {input.gtf}.genePred {output.bed12} && "
@@ -39,15 +39,15 @@ rule convert_firstBed12_column_to_ucsc:
     '''The first column of the BED12 needs to be converted from Ensembl format (1, 2, MT, etc.) to UCSC format (chr1, chr2, chrM, etc.)'''
     input:
         "ChromosomeMappings/GRCh38_ensembl2UCSC.txt",
-        bed12="output/combined.sorted.filtered.withcds.filtered.sorted.bed12"
-    output: "output/combined.sorted.filtered.withcds.filtered.sorted.ucsc.bed12"
+        bed12="output/combined.filtered.withcds.filtered.sorted.bed12"
+    output: "output/combined.filtered.withcds.filtered.sorted.ucsc.bed12"
     shell: "python scripts/convert_ensembl2ucsc.py {input.bed12} {output}"
 
 rule annotate_lncrnas:
     input:
         "tools/slncky/annotations/hg38.fa",
         slncky="tools/slncky/slncky.v1.0",
-        bed12="output/combined.sorted.filtered.withcds.filtered.sorted.ucsc.bed12"
+        bed12="output/combined.filtered.withcds.filtered.sorted.ucsc.bed12"
     output:
         "output/combined.slncky/annotated.canonical_to_lncs.txt",
         "output/combined.slncky/annotated.cluster_info.txt",

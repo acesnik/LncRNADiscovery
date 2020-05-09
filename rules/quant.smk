@@ -6,7 +6,7 @@ rule rsem_star_genome:
     input:
         efa="data/ERCC.fa",
         gfa=FA,
-        customGtf="output/combined.sorted.filtered.withcds.gtf"
+        customGtf="output/combined.filtered.withcds.gtf"
     output:
         suffix = REFSTAR_FOLDER + "SA"
     threads: 99
@@ -20,7 +20,7 @@ rule rsem_star_align:
     '''Align to transcripts with STAR and quantify with RSEM'''
     input:
         suffix=REFSTAR_FOLDER + "SA",
-        fastq=expand(FQ_FOLDER + "{fq}.fastq.gz", fq=FQ_PREFIXES) #single end only
+        fastq=FQ_FOLDER + "{fq}.fastq.gz", #single end only
     output:
         "output/{fq}.isoforms.results",
         "output/{fq}.genes.results",
