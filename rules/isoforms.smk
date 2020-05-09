@@ -16,7 +16,7 @@ rule merge_transcripts:
     threads: 24
     log: "output/combined.gtf.log"
     shell:
-        "strintie --merge -o {output} -G {input.gff} -p {threads} -i {input.custom_gtfs} 2> {log}"
+        "stringtie --merge -o {output} -G {input.gff} -p {threads} -i {input.custom_gtfs} 2> {log}"
 
 rule build_gtf_sharp:
     output: "GtfSharp/GtfSharp/bin/Release/netcoreapp2.1/GtfSharp.dll"
