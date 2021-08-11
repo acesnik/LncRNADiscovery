@@ -34,12 +34,12 @@ def unique_tag():
 rule all:
     input:
         "output/combined.slncky/annotated.lncs.info.txt", # lncRNA discovery
-        "output/Tpms.csv", "output/Counts.csv", "output/IdsToNames.csv" # quantification
+        "output/Tpms.csv", "output/Counts.csv" # quantification
 
 # rule clean:
 #     shell: "rm -rf ensembl output"
 
-include: "rules/align.smk"
+# include: "rules/align.smk"
 include: "rules/isoforms.smk"
 include: "rules/lncRNAs.smk"
 # include: "rules/qc.smk"

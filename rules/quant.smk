@@ -40,7 +40,8 @@ rule make_rsem_dataframe:
         gff=GFF3 + ".fix.gff3"
     output:
         counts="output/Counts.csv",
-        names="output/IdsToNames.csv",
         tpms="output/Tpms.csv"
+    params:
+        names="output/IdsToNames.csv",
     shell:
-        "python scripts/make_rsem_dataframe.py {input.gff} {output.counts} {output.tpms} {output.names}"
+        "python scripts/make_rsem_dataframe.py {input.gff} {output.counts} {output.tpms} {params.names}"

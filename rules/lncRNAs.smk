@@ -12,8 +12,8 @@ rule download_annotations:
     shell: "(cd tools/slncky && wget -c {SLNCKY_ANNOTATIONS} -O - | tar -xz) &> {log}"
 
 rule index_fa:
-    input: GENOME_FA
-    output: GENOME_FA + ".fai"
+    input: FA
+    output: FA + ".fai"
     shell: "samtools faidx {input}"
 
 rule convert_predicted_gtf_to_bed12:
@@ -24,12 +24,12 @@ rule convert_predicted_gtf_to_bed12:
     output:
         temp("output/combined.filtered.withcds.gtf.genePred"),
         bed12=temp("output/combined.filtered.withcds.filtered.bed12"),
-        bed12sorted="output/combined.filtered.withcds.filtered.sorted.bed12"
+        bed12sorted="output/combined.filtered.withcds.filtered.sorted.bed12",
     log: "output/combined.filtered.withcds.filtered.bed12.log"
     shell:
         "(gtfToGenePred {input.gtf} {input.gtf}.genePred && "
         "genePredToBed {input.gtf}.genePred {output.bed12} && "
-        "bedtools sort -faidx {input.fai} -i {output.bed12} > {output.bed12sorted}) &> {log}"
+        "bedtools sort -faidx {input.fai} -i <(grep -v ERCC {output.bed12}) > {output.bed12sorted}) &> {log}"
 
 rule download_chromosome_mappings:
     output: "ChromosomeMappings/GRCh38_ensembl2UCSC.txt"
@@ -54,10 +54,10 @@ rule annotate_lncrnas:
         "output/combined.slncky/annotated.filtered_info.txt",
         "output/combined.slncky/annotated.lncs.bed",
         "output/combined.slncky/annotated.lncs.info.txt",
-        "output/combined.slncky/annotated.orfs.txt",
         "output/combined.slncky/annotated.orthologs.top.txt",
         "output/combined.slncky/annotated.orthologs.txt",
     params: reference="hg38"
+    log: "output/combined.slncky.log"
     threads: 12
     shell:
-        "python2 {input.slncky} --threads {threads} {input.bed12} {params.reference} output/combined.slncky/annotated"
+        "(python2 {input.slncky} --threads {threads} {input.bed12} {params.reference} output/combined.slncky/annotated) 2> {log}"
